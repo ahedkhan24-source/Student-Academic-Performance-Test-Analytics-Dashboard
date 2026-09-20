@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Public Masterclass: Student Performance Executive Dashboard | upGrad</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --upgrad-red: #E01E26;
+            --tableau-blue: #1F77B4;
+            --tableau-orange: #FF7F0E;
+            --tab-dark: #0B132B;
+            --surface-card: #1C2541;
+            --surface-hover: #2A365D;
+            --accent-cyan: #48CAE4;
+            --accent-purple: #9D4EDD;
+            --accent-green: #06D6A0;
+            --accent-amber: #FFB703;
+            --text-primary: #F8F9FA;
+            --text-secondary: #A0AEC0;
+            --text-muted: #718096;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(72, 202, 228, 0.4);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --shadow-subtle: 0 12px 36px -10px rgba(0,0,0,0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--tab-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* Top Navigation Header */
+        header {
+            height: 64px;
+            background: rgba(11, 19, 43, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 100;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .upgrad-badge {
+            background: linear-gradient(135deg, var(--upgrad-red), #990B11);
+            color: white;
+            font-weight: 800;
+            font-size: 13.5px;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(224, 30, 38, 0.4);
+        }
+
+        .tool-badge {
+            background: rgba(31, 119, 180, 0.18);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(72, 202, 228, 0.3);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .deck-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-left: 1px solid var(--border-color);
+            padding-left: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .phase-indicator {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(72, 202, 228, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(72, 202, 228, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        /* Slide Main Container */
+        main {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .slide {
+            position: absolute;
+            width: calc(100% - 48px);
+            max-width: 1240px;
+            height: calc(100% - 24px);
+            background: var(--surface-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateX(50px) scale(0.98);
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: all;
+            z-index: 10;
+        }
+
+        .slide.previous {
+            opacity: 0;
+            transform: translateX(-50px) scale(0.98);
+        }
+
+        /* Slide Header & Layout */
+        .slide-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 14px;
+        }
+
+        .task-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 3px;
+            display: block;
+        }
+
+        .slide-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.4px;
+        }
+
+        .slide-meta {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slide-content-grid {
+            display: grid;
+            grid-template-columns: 1.35fr 0.95fr;
+            gap: 24px;
+            flex: 1;
+            align-items: start;
+        }
+
+        .slide-content-full {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            flex: 1;
+        }
+
+        /* Checklist Task Cards */
+        .subtasks-card {
+            background: rgba(11, 19, 43, 0.65);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .subtask-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 11px 13px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .subtask-item:hover {
+            background: var(--surface-hover);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .subtask-item.completed {
+            border-color: rgba(6, 214, 160, 0.3);
+            background: rgba(6, 214, 160, 0.06);
+        }
+
+        .subtask-checkbox {
+            width: 19px;
+            height: 19px;
+            border-radius: 4px;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: transparent;
+            margin-top: 2px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .subtask-item.completed .subtask-checkbox {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .subtask-text-content {
+            flex: 1;
+        }
+
+        .subtask-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .subtask-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Tableau Calculated Field & Callout Cards */
+        .pro-card {
+            background: linear-gradient(135deg, rgba(72, 202, 228, 0.06), rgba(157, 78, 221, 0.06));
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-highlight);
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-label.pro { color: var(--accent-amber); }
+        .card-label.formula { color: var(--accent-cyan); }
+        .card-label.kpi { color: var(--accent-green); }
+
+        .calc-box {
+            background: #0B1120;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            color: var(--accent-cyan);
+            border: 1px solid rgba(72, 202, 228, 0.2);
+            position: relative;
+            word-break: break-all;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-secondary);
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-cyan);
+            color: #000000;
+            font-weight: 700;
+        }
+
+        .pro-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .pro-list li {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .pro-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+            font-size: 14px;
+        }
+
+        .metric-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .mini-kpi-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .mini-kpi-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .mini-kpi-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 3px;
+        }
+
+        .data-table-mini {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            text-align: left;
+            margin-top: 6px;
+        }
+
+        .data-table-mini th {
+            color: var(--text-muted);
+            padding: 5px 6px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .data-table-mini td {
+            padding: 5px 6px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* Footer Controls */
+        footer {
+            height: 64px;
+            background: rgba(11, 19, 43, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 100;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            background: var(--surface-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--accent-cyan);
+            color: #0B132B;
+            font-weight: 700;
+            border-color: transparent;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #6FE3FF;
+            box-shadow: 0 4px 15px rgba(72, 202, 228, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .progress-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            width: 320px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--upgrad-red), var(--accent-cyan));
+            width: 5%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .slide-counter {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 5px;
+        }
+        .slide::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-container">
+            <div class="upgrad-badge">upGrad</div>
+            <div class="tool-badge"><i class="fa-solid fa-cube"></i> Tableau Public</div>
+            <div class="deck-title">Student Academic Performance & Test Score Analytics</div>
+        </div>
+        <div class="header-actions">
+            <span class="phase-indicator" id="phaseIndicator">Phase 1: Ingestion & Data Prep</span>
+            <button class="btn" style="padding: 5px 10px; font-size: 11px;" onclick="resetChecklists()">
+                <i class="fa-solid fa-arrows-rotate"></i> Reset Checklists
+            </button>
+        </div>
+    </header>
+
+    <main id="slideContainer">
+
+        <div class="slide active" data-phase="Architecture" data-step="Executive Overview">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Course Project Blueprint</span>
+                    <h1 class="slide-title">Tableau Academic Analytics Dashboard Masterclass</h1>
+                </div>
+                <div class="slide-meta">Tableau Public Desktop (Latest) • upGrad Learning Centre</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <h3 style="font-size: 15px; font-weight: 700;">Project Objective</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                        As an Analytics Lead at upGrad, your mission is to guide students through turning 30,000+ student records (with messy CSV index columns, Excel date-corrupted weekly study hour strings like <code>"05-Oct"</code>, and null demographics) into a <strong>production-ready Tableau Public Dashboard</strong> featuring dynamic LOD expressions, Custom BAN KPI cards, Viz-in-Tooltips, and cross-sheet synchronized dashboard actions.
+                    </p>
+                    <div class="metric-preview-grid">
+                        <div class="mini-kpi-card">
+                            <div class="mini-kpi-title">Student Sample</div>
+                            <div class="mini-kpi-value" style="color: var(--accent-cyan);">30,641 Rows</div>
+                        </div>
+                        <div class="mini-kpi-card">
+                            <div class="mini-kpi-title">Core Disciplines</div>
+                            <div class="mini-kpi-value" style="color: var(--accent-amber);">Math • Read • Write</div>
+                        </div>
+                        <div class="mini-kpi-card">
+                            <div class="mini-kpi-title">Target Artifact</div>
+                            <div class="mini-kpi-value" style="color: var(--accent-green);">1-Page Web App</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                        <i class="fa-solid fa-keyboard" style="color: var(--accent-cyan);"></i> Use <strong>Left / Right Arrow keys</strong> to step through all 20 guided tasks.
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-graduation-cap"></i> Tableau Masterclass Deliverables</div>
+                    <ul class="pro-list">
+                        <li><strong>Data Source Cleaning:</strong> Hide unlabelled CSV index column, recode corrupt study hour strings, handle null parent education.</li>
+                        <li><strong>Calculated Fields & LODs:</strong> Total Score, Overall Average, Pass/Fail Status, and Cohort Fixed LOD averages.</li>
+                        <li><strong>Visual Suite:</strong> Executive BANs, Test Prep Impact Diverging Bars, Subject Correlation Scatter, Parental Education Heatmap.</li>
+                        <li><strong>Tableau UX:</strong> Viz-in-Tooltip detail inspector, synchronized global filters, and container hierarchy.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Data Source ETL" data-step="Task 01 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 01</span>
+                    <h2 class="slide-title">Connect to CSV & Initialize Tableau Data Source</h2>
+                </div>
+                <div class="slide-meta">Time: 4 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 1.1: Connect to Text File</div>
+                            <div class="subtask-desc">Open Tableau Public Desktop > Under <strong>Connect > To a File</strong>, click <strong>Text file</strong> > Select <code>student_scores.csv</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 1.2: Hide Unnamed CSV Row Index Column</div>
+                            <div class="subtask-desc">In the Data Source grid preview, locate the first column (named <code>F1</code> or blank integer index) > Click the column dropdown arrow > Select <strong>Hide</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 1.3: Rename Data Source Connection</div>
+                            <div class="subtask-desc">Right-click the data source name at top left > Rename to <code>DS_StudentPerformance</code>.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-lightbulb"></i> Tableau Hygiene Tip</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Hiding redundant raw row indices reduces metadata noise in the Data Pane, ensuring learners focus only on genuine analytical dimensions and measures.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Data Source ETL" data-step="Task 02 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 02</span>
+                    <h2 class="slide-title">Fix Corrupted Study Hours Date Strings & Impute Nulls</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 2.1: Identify Date-Corrupted Study Hours</div>
+                            <div class="subtask-desc">In raw CSVs, study hours between 5 and 10 were auto-formatted by Excel into date strings (<code>"05-Oct"</code> or <code>"5-10"</code>).</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 2.2: Create Clean Study Hours Calculated Field</div>
+                            <div class="subtask-desc">Create calculated field <code>Study_Hours_Clean</code> using <code>CASE</code> or <code>IF</code> to map "05-Oct" -> "5 - 10 Hours", "&lt; 5" -> "&lt; 5 Hours", "&gt; 10" -> "&gt; 10 Hours".</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 2.3: Clean Ethnic Group & Parent Education Nulls</div>
+                            <div class="subtask-desc">Create <code>Parent_Educ_Clean = IFNULL([ParentEduc], "Not Specified")</code> and <code>Ethnic_Group_Clean = IFNULL([EthnicGroup], "Unspecified")</code>.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label formula"><i class="fa-solid fa-terminal"></i> Tableau Calculation Formula</div>
+                    <div class="calc-box">Study_Hours_Clean:
+CASE [WklyStudyHours]
+    WHEN "05-Oct" THEN "5 - 10 Hours"
+    WHEN "5-10" THEN "5 - 10 Hours"
+    WHEN "< 5" THEN "< 5 Hours"
+    WHEN "> 10" THEN "> 10 Hours"
+    ELSE "Not Recorded"
+END<button class="copy-btn" onclick="copyFormula(this, 'CASE [WklyStudyHours]\n    WHEN &quot;05-Oct&quot; THEN &quot;5 - 10 Hours&quot;\n    WHEN &quot;5-10&quot; THEN &quot;5 - 10 Hours&quot;\n    WHEN &quot;< 5&quot; THEN &quot;< 5 Hours&quot;\n    WHEN &quot;> 10&quot; THEN &quot;> 10 Hours&quot;\n    ELSE &quot;Not Recorded&quot;\nEND')">Copy</button></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Feature Engineering" data-step="Task 03 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 03</span>
+                    <h2 class="slide-title">Engineer Composite Academic Scores & Average Grade</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 3.1: Create Total Composite Score Measure</div>
+                            <div class="subtask-desc">Create calculated field <code>Total_Score = [MathScore] + [ReadingScore] + [WritingScore]</code> (Max 300).</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 3.2: Create Overall Average Score Measure</div>
+                            <div class="subtask-desc">Create calculated field <code>Overall_Avg_Score = ([MathScore] + [ReadingScore] + [WritingScore]) / 3</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 3.3: Set Default Number Properties</div>
+                            <div class="subtask-desc">Right-click <code>Overall_Avg_Score</code> > <strong>Default Properties > Number Format</strong> > Number (Custom): 1 decimal place.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label formula"><i class="fa-solid fa-code"></i> Academic Measures</div>
+                    <div class="calc-box" style="margin-bottom:6px;">Overall_Avg_Score:
+([MathScore] + [ReadingScore] + [WritingScore]) / 3.0<button class="copy-btn" onclick="copyFormula(this, '([MathScore] + [ReadingScore] + [WritingScore]) / 3.0')">Copy</button></div>
+                    <p style="font-size:11.5px; color:var(--text-secondary); margin-top:6px;">
+                        Baseline dataset validation: Overall student population average is <strong>67.8 / 100</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Feature Engineering" data-step="Task 04 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 04</span>
+                    <h2 class="slide-title">Create Letter Grades & Pass/Fail Classification</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 4.1: Create Standard Letter Grade Dimension</div>
+                            <div class="subtask-desc">Add <code>Letter_Grade</code>: &gt;=90 -> "A (Outstanding)", &gt;=80 -> "B (Above Avg)", &gt;=70 -> "C (Average)", &gt;=60 -> "D (Below Avg)", Else -> "F (Fail)".</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 4.2: Create Academic Status Boolean</div>
+                            <div class="subtask-desc">Create <code>Is_Passing = IF [Overall_Avg_Score] >= 60 THEN "Pass" ELSE "At Risk / Fail" END</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 4.3: Create Test Prep Status Label</div>
+                            <div class="subtask-desc">Create <code>Test_Prep_Clean = IF [TestPrep] = "completed" THEN "Completed Prep" ELSE "No Prep Course" END</code>.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label formula"><i class="fa-solid fa-terminal"></i> Letter Grade Formula</div>
+                    <div class="calc-box">Letter_Grade:
+IF [Overall_Avg_Score] >= 90 THEN "A (90-100)"
+ELSEIF [Overall_Avg_Score] >= 80 THEN "B (80-89)"
+ELSEIF [Overall_Avg_Score] >= 70 THEN "C (70-79)"
+ELSEIF [Overall_Avg_Score] >= 60 THEN "D (60-69)"
+ELSE "F (< 60)"
+END<button class="copy-btn" onclick="copyFormula(this, 'IF [Overall_Avg_Score] >= 90 THEN &quot;A (90-100)&quot;\nELSEIF [Overall_Avg_Score] >= 80 THEN &quot;B (80-89)&quot;\nELSEIF [Overall_Avg_Score] >= 70 THEN &quot;C (70-79)&quot;\nELSEIF [Overall_Avg_Score] >= 60 THEN &quot;D (60-69)&quot;\nELSE &quot;F (< 60)&quot;\nEND')">Copy</button></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="LOD Expressions" data-step="Task 05 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 05</span>
+                    <h2 class="slide-title">Engineer Tableau Level of Detail (LOD) Benchmark Expressions</h2>
+                </div>
+                <div class="slide-meta">Time: 6 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 5.1: Create Global Fixed Benchmark Score</div>
+                            <div class="subtask-desc">Create calculated field <code>LOD_Global_Avg_Score = { FIXED : AVG([Overall_Avg_Score]) }</code> to retain the total population benchmark regardless of worksheet filters.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 5.2: Create Ethnic Cohort LOD Average</div>
+                            <div class="subtask-desc">Create calculated field <code>LOD_Ethnic_Avg_Score = { FIXED [Ethnic_Group_Clean] : AVG([Overall_Avg_Score]) }</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 5.3: Create Student Performance Delta vs Global</div>
+                            <div class="subtask-desc">Create <code>Score_Delta_vs_Global = [Overall_Avg_Score] - [LOD_Global_Avg_Score]</code>.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-diagram-project"></i> Why LOD Expressions?</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Level of Detail expressions allow you to calculate values at the data source level without referencing the visualization's dimensional granularity. This keeps national benchmarks steady even when slicing by specific student subgroups.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Worksheet 1 (BANs)" data-step="Task 06 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 06</span>
+                    <h2 class="slide-title">Sheet 1: Executive KPI BANs (Big Numbers with Secondary Context)</h2>
+                </div>
+                <div class="slide-meta">Time: 6 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 6.1: Create Sheet `BAN_Student_KPIs`</div>
+                            <div class="subtask-desc">In a new sheet, place <code>Measure Names</code> on Columns and <code>Measure Values</code> on Text. Filter Measure Names to: <code>CNT(student_scores.csv)</code>, <code>AVG(MathScore)</code>, <code>AVG(ReadingScore)</code>, and <code>AVG(WritingScore)</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 6.2: Format Large Bold Typography</div>
+                            <div class="subtask-desc">Set Mark Type to <strong>Text</strong>. Edit Label: Number 24pt Bold (White <code>#F8F9FA</code>), Subtitle 10pt (Cyan <code>#48CAE4</code>). Set View to <strong>Entire View</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 6.3: Format Sheet Shading</div>
+                            <div class="subtask-desc">Format > Shading > Worksheet: <strong>None / Transparent</strong> (or <code>#1C2541</code> to match card containers).</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label kpi"><i class="fa-solid fa-chart-line"></i> Population Baselines</div>
+                    <div class="metric-preview-grid">
+                        <div class="mini-kpi-card">
+                            <div class="mini-kpi-title">Avg Math</div>
+                            <div class="mini-kpi-value" style="color: var(--accent-cyan);">66.6</div>
+                        </div>
+                        <div class="mini-kpi-card">
+                            <div class="mini-kpi-title">Avg Reading</div>
+                            <div class="mini-kpi-value" style="color: var(--accent-green);">69.4</div>
+                        </div>
+                        <div class="mini-kpi-card">
+                            <div class="mini-kpi-title">Avg Writing</div>
+                            <div class="mini-kpi-value" style="color: var(--accent-amber);">68.4</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Worksheet 2" data-step="Task 07 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 07</span>
+                    <h2 class="slide-title">Sheet 2: Test Preparation Course Impact Diverging Bar</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 7.1: Build Preparation Comparison View</div>
+                            <div class="subtask-desc">Create sheet <code>Bar_TestPrep_Impact</code>. Rows: <code>Test_Prep_Clean</code>. Columns: <code>Measure Values</code> (Avg Math, Avg Reading, Avg Writing).</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 7.2: Side-by-Side Bar Configuration</div>
+                            <div class="subtask-desc">Place <code>Measure Names</code> on Rows (next to Test Prep) or on Color. Set Mark Type to <strong>Bar</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 7.3: Apply Custom Color Palette & Labels</div>
+                            <div class="subtask-desc">Color palette: Math (<code>#48CAE4</code>), Reading (<code>#06D6A0</code>), Writing (<code>#FFB703</code>). Turn on Mark Labels with 1 decimal formatting.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-graduation-cap"></i> Educational Takeaway</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Completing the test prep course yields an average gain of <strong>+9.6 points in Writing</strong>, <strong>+7.4 in Reading</strong>, and <strong>+5.8 in Math</strong> across all ethnic groups.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Worksheet 3" data-step="Task 08 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 08</span>
+                    <h2 class="slide-title">Sheet 3: Parental Education & Socioeconomic Score Heatmap</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 8.1: Matrix Grid Construction</div>
+                            <div class="subtask-desc">Create sheet <code>Heatmap_ParentEduc_Lunch</code>. Columns: <code>LunchType</code> (Standard vs Free/Reduced). Rows: <code>Parent_Educ_Clean</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 8.2: Assign Color Gradient & Shape</div>
+                            <div class="subtask-desc">Mark Type: <strong>Square</strong>. Place <code>AVG(Overall_Avg_Score)</code> on <strong>Color</strong> and <strong>Label</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 8.3: Configure Diverging Palette</div>
+                            <div class="subtask-desc">Edit Colors: Select <strong>Orange-Blue Diverging</strong> (or Custom Slate-to-Cyan). Center palette at <strong>67.8</strong> (National Average).</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-table-cells"></i> Socioeconomic Correlation</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Students with Master's Degree parents and standard lunch average <strong>76.4</strong>, whereas students with Some High School parents on subsidized lunch average <strong>58.2</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Worksheet 4" data-step="Task 09 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 09</span>
+                    <h2 class="slide-title">Sheet 4: Weekly Study Hours vs Score Box Plot & Jitter</h2>
+                </div>
+                <div class="slide-meta">Time: 6 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 9.1: Build Study Hours Distribution</div>
+                            <div class="subtask-desc">Create sheet <code>Boxplot_StudyHours</code>. Columns: <code>Study_Hours_Clean</code>. Rows: <code>Overall_Avg_Score</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 9.2: Insert Box Plot Reference</div>
+                            <div class="subtask-desc">Open <strong>Analytics Pane</strong> on the left > Drag <strong>Box Plot</strong> onto the canvas (Cell). Check "Show underlying marks with jitter".</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 9.3: Sort Categorical Axis</div>
+                            <div class="subtask-desc">Manually sort Columns: <code>"&lt; 5 Hours"</code>, <code>"5 - 10 Hours"</code>, <code>"&gt; 10 Hours"</code>, <code>"Not Recorded"</code>.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-chart-simple"></i> Effort vs Performance</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Students studying &gt;10 hours/week hold a median score of <strong>71.3</strong> compared to <strong>64.7</strong> for those studying &lt;5 hours/week.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Worksheet 5" data-step="Task 10 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 10</span>
+                    <h2 class="slide-title">Sheet 5: Math vs Reading Dual-Axis Correlation Scatter</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 10.1: Place Continuous Measures on Axes</div>
+                            <div class="subtask-desc">Create sheet <code>Scatter_Math_vs_Reading</code>. Columns: <code>MathScore</code> (Dimension or Disaggregated). Rows: <code>ReadingScore</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 10.2: Color Code by Gender & Test Prep</div>
+                            <div class="subtask-desc">Place <code>Gender</code> on Color (Female: <code>#FF70A6</code>, Male: <code>#48CAE4</code>). Set Mark Type to <strong>Circle</strong>, Opacity to <strong>40%</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 10.3: Add Linear Trend Line</div>
+                            <div class="subtask-desc">Analytics Pane > Drag <strong>Trend Line</strong> > Model: Linear (reveals strong positive $R^2 = 0.66$ correlation).</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-shapes"></i> Scatter Plot Insight</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Female students systematically lean toward higher Reading/Writing coordinates, while Male students show stronger relative placement along the Math axis.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Worksheet 6 (Tooltip)" data-step="Task 11 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 11</span>
+                    <h2 class="slide-title">Sheet 6: Student Demographic Profile (Viz-in-Tooltip Source)</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 11.1: Build Mini Breakdown Visual</div>
+                            <div class="subtask-desc">Create sheet <code>Tooltip_Student_Profile</code>. Rows: <code>Measure Names</code> (Avg Math, Reading, Writing). Columns: <code>AVG(Measure Values)</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 11.2: Add Passing Threshold Reference Line</div>
+                            <div class="subtask-desc">Analytics Pane > <strong>Reference Line</strong> > Value: <strong>60 (Passing Mark)</strong>, Label: "Passing Line", Color: Red Dashed (<code>#E01E26</code>).</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 11.3: Compact Sizing for Tooltip Embedding</div>
+                            <div class="subtask-desc">Set View to <strong>Entire View</strong>. Keep fonts clean and minimalist (9pt Inter) with no axis titles.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-wand-magic-sparkles"></i> Viz-in-Tooltip Value</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Embedding this dedicated mini-sheet inside scatter plot tooltips allows users to hover over any single point and see that student's 3-subject score breakdown instantly.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Worksheet 7" data-step="Task 12 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 12</span>
+                    <h2 class="slide-title">Sheet 7: Athletic Participation & Extracurricular Impact</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 12.1: Create Sport Frequency Breakdown</div>
+                            <div class="subtask-desc">Create sheet <code>Bar_Sport_Performance</code>. Rows: <code>PracticeSport</code> (Regularly, Sometimes, Never). Columns: <code>AVG(Overall_Avg_Score)</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 12.2: Add Passing Rate % as Secondary Line / Color</div>
+                            <div class="subtask-desc">Place <code>Is_Passing</code> on Color or compute percentage passing using quick table calculations.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 12.3: Fix Axis Ranges</div>
+                            <div class="subtask-desc">Edit Axis > Set Fixed Range from <strong>50 to 75</strong> to highlight differences across sport participation tiers.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-futbol"></i> Extracurricular Findings</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Students who practice sports "regularly" achieve a mean score of <strong>68.8</strong> vs <strong>65.3</strong> for those who "never" participate, showing consistent positive correlation.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Dashboard Assembly" data-step="Task 13 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 13</span>
+                    <h2 class="slide-title">Initialize Fixed-Size Dashboard & Layout Containers</h2>
+                </div>
+                <div class="slide-meta">Time: 6 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 13.1: Create New Dashboard with Fixed Resolution</div>
+                            <div class="subtask-desc">Click <strong>New Dashboard</strong> > In Size pane (left), change from Range to <strong>Fixed Size: Generic Desktop (1366 x 768 px)</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 13.2: Drag Primary Vertical Layout Container</div>
+                            <div class="subtask-desc">Drag a <strong>Vertical Layout Container</strong> onto the canvas. Set Background to Dark Navy (<code>#0B132B</code>).</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 13.3: Nest Horizontal Rows for Header, BANs & Body</div>
+                            <div class="subtask-desc">Nest 3 Horizontal Containers: Row 1 (Header Banner - 60px), Row 2 (BAN Cards - 80px), Row 3 (Main Visuals Grid).</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-layer-group"></i> Container Architecture Rule</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Never float elements randomly. Tiling structured horizontal and vertical containers guarantees that filters, legends, and charts maintain strict pixel alignment when published to Tableau Public.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Dashboard Assembly" data-step="Task 14 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 14</span>
+                    <h2 class="slide-title">Design Executive Header Banner & Dynamic Subtitle</h2>
+                </div>
+                <div class="slide-meta">Time: 4 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 14.1: Insert Header Text Object</div>
+                            <div class="subtask-desc">Drag a <strong>Text Object</strong> into the top container row. Title: "STUDENT ACADEMIC PERFORMANCE & TEST SCORE ANALYTICS".</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 14.2: Add Subtitle & Operational Metadata</div>
+                            <div class="subtask-desc">Subtitle: "Cohort Diagnostics • Socioeconomic Drivers • Interactive Tableau Intelligence Dashboard".</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 14.3: Format Container Background & Inner Padding</div>
+                            <div class="subtask-desc">In Layout pane > Set Container Background to <code>#1C2541</code>, Outer Padding: 4px, Inner Padding: 10px.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-palette"></i> Palette Harmonization</div>
+                    <ul class="pro-list">
+                        <li><strong>Dashboard Canvas:</strong> <code>#0B132B</code></li>
+                        <li><strong>Container Cards:</strong> <code>#1C2541</code></li>
+                        <li><strong>Primary Text:</strong> <code>#F8F9FA</code></li>
+                        <li><strong>Highlight Accents:</strong> <code>#48CAE4</code> (Cyan) & <code>#06D6A0</code> (Emerald)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Dashboard Assembly" data-step="Task 15 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 15</span>
+                    <h2 class="slide-title">Dock BAN Cards & Assemble 2x2 Analytical Visual Grid</h2>
+                </div>
+                <div class="slide-meta">Time: 6 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 15.1: Place BAN Worksheet in Row 2</div>
+                            <div class="subtask-desc">Drag <code>BAN_Student_KPIs</code> into the middle horizontal container. Hide sheet title. Set to <strong>Entire View</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 15.2: Place Left Quadrant Visuals</div>
+                            <div class="subtask-desc">Place <code>Bar_TestPrep_Impact</code> on Top-Left and <code>Heatmap_ParentEduc_Lunch</code> on Bottom-Left.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 15.3: Place Right Quadrant Visuals</div>
+                            <div class="subtask-desc">Place <code>Scatter_Math_vs_Reading</code> on Top-Right and <code>Boxplot_StudyHours</code> on Bottom-Right.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-table-columns"></i> Quadrant Visual Balance</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        This 2x2 arrangement pairs high-level group comparisons on the left with continuous distribution and student-level scatter analysis on the right.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Tooltips & Deep-Dive" data-step="Task 16 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 16</span>
+                    <h2 class="slide-title">Embed Viz-in-Tooltip across Scatter & Heatmap Sheets</h2>
+                </div>
+                <div class="slide-meta">Time: 6 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 16.1: Open Scatter Plot Tooltip Dialog</div>
+                            <div class="subtask-desc">Navigate to <code>Scatter_Math_vs_Reading</code> sheet > In Marks Card, click <strong>Tooltip</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 16.2: Insert Viz-in-Tooltip Script</div>
+                            <div class="subtask-desc">Click <strong>Insert > Sheets > Tooltip_Student_Profile</strong>. Set <code>maxwidth="300" maxheight="180"</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 16.3: Format Dynamic Parameter Strings</div>
+                            <div class="subtask-desc">Add header strings: "Student Gender: &lt;Gender&gt; | Ethnic Group: &lt;Ethnic_Group_Clean&gt;". Test hover interaction on dashboard.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label formula"><i class="fa-solid fa-terminal"></i> Tooltip Embed Syntax</div>
+                    <div class="calc-box">&lt;Sheet name="Tooltip_Student_Profile" maxwidth="320" maxheight="200" filter="&lt;All Fields&gt;"&gt;<button class="copy-btn" onclick="copyFormula(this, '<Sheet name=&quot;Tooltip_Student_Profile&quot; maxwidth=&quot;320&quot; maxheight=&quot;200&quot; filter=&quot;<All Fields>&quot;>')">Copy</button></div>
+                    <p style="font-size:11.5px; color:var(--text-secondary); margin-top:6px;">
+                        Generates a dynamic 3-subject breakdown chart inside the hover tooltip on any data mark.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Slicers & Filter Engine" data-step="Task 17 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 17</span>
+                    <h2 class="slide-title">Deploy Global Slicers (Multi-Select Buttons & Dropdowns)</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 17.1: Expose 4 Core Dimensional Filters</div>
+                            <div class="subtask-desc">On any sheet, add filters to the shelf: <code>Ethnic_Group_Clean</code>, <code>Gender</code>, <code>Test_Prep_Clean</code>, and <code>LunchType</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 17.2: Convert to Multiple Values (Dropdown)</div>
+                            <div class="subtask-desc">On dashboard > Select each filter card dropdown > Change control type to <strong>Multiple Values (Dropdown)</strong> with search enabled.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 17.3: Dock in Top Horizontal Slicer Ribbon</div>
+                            <div class="subtask-desc">Arrange the 4 dropdown slicers horizontally directly beneath the title header inside a unified <code>#1C2541</code> container.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-sliders"></i> Slicer Design Standard</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Placing compact dropdown slicers in a top horizontal ribbon frees up vertical screen space for charts while keeping filters accessible.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Slicers & Filter Engine" data-step="Task 18 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 18</span>
+                    <h2 class="slide-title">Synchronize Slicers Across All Dashboard Worksheets</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 18.1: Apply Slicer to Related Worksheets</div>
+                            <div class="subtask-desc">Click dropdown arrow on <code>Ethnic_Group_Clean</code> filter > <strong>Apply to Worksheets > Selected Worksheets...</strong></div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 18.2: Check All Dashboard Sheets</div>
+                            <div class="subtask-desc">Check: <code>BAN_Student_KPIs</code>, <code>Bar_TestPrep_Impact</code>, <code>Heatmap_ParentEduc_Lunch</code>, <code>Scatter_Math_vs_Reading</code>, and <code>Boxplot_StudyHours</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 18.3: Repeat for Gender, Prep & Lunch Slicers</div>
+                            <div class="subtask-desc">Apply all remaining slicers to all dashboard worksheets so any filter change updates the entire dashboard simultaneously.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-bolt"></i> Slicer Sync Rationale</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Without explicit synchronization via "Apply to Worksheets", filter selections only modify a single chart, breaking dashboard analytical consistency.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Interactive Actions" data-step="Task 19 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 19</span>
+                    <h2 class="slide-title">Configure Dashboard Filter Actions & Interactive Cross-Highlight</h2>
+                </div>
+                <div class="slide-meta">Time: 5 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 19.1: Configure Heatmap as Interactive Filter</div>
+                            <div class="subtask-desc">Click the <code>Heatmap_ParentEduc_Lunch</code> visual > Click the <strong>Funnel Icon ("Use as Filter")</strong> on its top toolbar.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 19.2: Create Highlight Action on Test Prep</div>
+                            <div class="subtask-desc">Dashboard Menu > <strong>Actions...</strong> > Add Action > <strong>Highlight</strong>: Source <code>Bar_TestPrep_Impact</code> -> Target <code>Scatter_Math_vs_Reading</code>.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 19.3: Add "Reset All Filters" Button Object</div>
+                            <div class="subtask-desc">Add a Button Object in the filter bar > Action: Back / Reset > Label: "Reset Filters" with Cyan accent styling.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-hand-pointer"></i> Cross-Filtering Experience</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Clicking any cell in the Parent Education heatmap (e.g., "Bachelor's Degree + Free Lunch") instantly focuses the scatter plot and study hour box plots on that exact student cohort.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Final Deployment" data-step="Task 20 / 20">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Task 20</span>
+                    <h2 class="slide-title">QA Verification, Layout Lock & Publish to Tableau Public Cloud</h2>
+                </div>
+                <div class="slide-meta">Time: 6 mins</div>
+            </div>
+            <div class="slide-content-grid">
+                <div class="subtasks-card">
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 20.1: Clean Tooltips & Remove Axis Clutter</div>
+                            <div class="subtask-desc">Right-click and uncheck <strong>Show Header</strong> on redundant measure value titles. Ensure all tooltip strings have bold clear labels and no missing tags.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 20.2: Run Stress-Test Verification Combo</div>
+                            <div class="subtask-desc">Filter: "Group C" + "Female" + "Completed Prep" + "Standard Lunch". Confirm BAN updates to <strong>76.8 Overall Avg</strong> with zero <code>#NULL!</code> errors.</div>
+                        </div>
+                    </div>
+                    <div class="subtask-item" onclick="toggleTask(this)">
+                        <div class="subtask-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <div class="subtask-text-content">
+                            <div class="subtask-title">Sub-task 20.3: Save & Publish to Tableau Public</div>
+                            <div class="subtask-desc">File > <strong>Save to Tableau Public As...</strong> > Sign in to Tableau Cloud > Name workbook <code>Student_Performance_Executive_Dashboard_upGrad</code>.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pro-card">
+                    <div class="card-label pro"><i class="fa-solid fa-cloud-arrow-up"></i> Deployment Complete</div>
+                    <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Congratulations! You have turned raw student score data into an enterprise-grade, cloud-deployed Tableau Public dashboard.
+                    </p>
+                    <button class="btn btn-primary" style="margin-top:10px; width:100%; justify-content:center;" onclick="showSummary()">
+                        <i class="fa-solid fa-award"></i> View Masterclass Architecture Blueprint
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" data-phase="Deployment Blueprint" data-step="Capstone Architecture">
+            <div class="slide-header">
+                <div>
+                    <span class="task-tag">Masterclass Blueprint</span>
+                    <h2 class="slide-title">Tableau Public Executive Architecture & Analytical Pipeline</h2>
+                </div>
+                <div class="slide-meta">Status: Cloud Deployable</div>
+            </div>
+            <div class="slide-content-full">
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:14px;">
+                    <div class="subtasks-card" style="border-top:3px solid var(--accent-cyan);">
+                        <div style="font-size:12.5px; font-weight:700; color:var(--accent-cyan); margin-bottom:4px;">1. DATA PREP & LODs</div>
+                        <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.4;">
+                            • Hidden index columns<br>
+                            • Cleaned `"05-Oct"` study hours<br>
+                            • Total & Avg Score formulas<br>
+                            • <code>{FIXED : AVG()}</code> LODs
+                        </div>
+                    </div>
+                    <div class="subtasks-card" style="border-top:3px solid var(--accent-green);">
+                        <div style="font-size:12.5px; font-weight:700; color:var(--accent-green); margin-bottom:4px;">2. WORKSHEET SUITE</div>
+                        <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.4;">
+                            • 4-Metric Executive BANs<br>
+                            • Test Prep Diverging Bar<br>
+                            • Parent Educ Heatmap<br>
+                            • Math-Reading Scatter
+                        </div>
+                    </div>
+                    <div class="subtasks-card" style="border-top:3px solid var(--accent-amber);">
+                        <div style="font-size:12.5px; font-weight:700; color:var(--accent-amber); margin-bottom:4px;">3. ADVANCED UX</div>
+                        <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.4;">
+                            • Embedded Viz-in-Tooltips<br>
+                            • Study Hour Boxplot + Jitter<br>
+                            • Fixed Reference Lines<br>
+                            • 1366x768 Layout Containers
+                        </div>
+                    </div>
+                    <div class="subtasks-card" style="border-top:3px solid var(--upgrad-red);">
+                        <div style="font-size:12.5px; font-weight:700; color:var(--upgrad-red); margin-bottom:4px;">4. SYNC & CLOUD</div>
+                        <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.4;">
+                            • Multi-Sheet Filter Sync<br>
+                            • Dashboard Filter Actions<br>
+                            • Cross-Highlighting Triggers<br>
+                            • Published on Tableau Public
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; text-align:center;">
+                    <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">Ready for Portfolio Presentation & LMS Submission</h3>
+                    <p style="font-size:12.5px; color:var(--text-secondary); max-width:850px; margin:0 auto;">
+                        Save your master file as <code>Student_Performance_Executive_Dashboard_Final.twbx</code> and share the live Tableau Public cloud URL. This project demonstrates end-to-end Tableau proficiency from data preparation and Level of Detail expressions to Viz-in-Tooltips and interactive dashboard design.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <div class="nav-buttons">
+            <button class="btn" id="prevBtn" onclick="prevSlide()">
+                <i class="fa-solid fa-arrow-left"></i> Previous
+            </button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextSlide()">
+                Next Task <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <div class="progress-wrapper">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <span class="slide-counter" id="slideCounter">Slide 1 of 22</span>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" style="font-size:11.5px;" onclick="goToSlide(0)"><i class="fa-solid fa-house"></i> Intro</button>
+            <button class="btn" style="font-size:11.5px;" onclick="goToSlide(slides.length - 1)"><i class="fa-solid fa-flag-checkered"></i> Summary</button>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+        const slideCounter = document.getElementById('slideCounter');
+        const phaseIndicator = document.getElementById('phaseIndicator');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function updateSlide() {
+            slides.forEach((slide, idx) => {
+                slide.classList.remove('active', 'previous');
+                if (idx === currentSlideIndex) {
+                    slide.classList.add('active');
+                } else if (idx < currentSlideIndex) {
+                    slide.classList.add('previous');
+                }
+            });
+
+            const progress = ((currentSlideIndex + 1) / slides.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            slideCounter.textContent = `Slide ${currentSlideIndex + 1} of ${slides.length}`;
+            
+            const currentPhase = slides[currentSlideIndex].getAttribute('data-phase') || "Tableau Workshop";
+            const currentStep = slides[currentSlideIndex].getAttribute('data-step') || "";
+            phaseIndicator.textContent = `${currentPhase} ${currentStep ? '• ' + currentStep : ''}`;
+
+            prevBtn.disabled = currentSlideIndex === 0;
+            if (currentSlideIndex === slides.length - 1) {
+                nextBtn.innerHTML = `Complete <i class="fa-solid fa-check-double"></i>`;
+            } else {
+                nextBtn.innerHTML = `Next Task <i class="fa-solid fa-arrow-right"></i>`;
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updateSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            if (index >= 0 && index < slides.length) {
+                currentSlideIndex = index;
+                updateSlide();
+            }
+        }
+
+        function showSummary() {
+            goToSlide(slides.length - 1);
+        }
+
+        function toggleTask(element) {
+            element.classList.toggle('completed');
+        }
+
+        function resetChecklists() {
+            document.querySelectorAll('.subtask-item').forEach(item => {
+                item.classList.remove('completed');
+            });
+        }
+
+        function copyFormula(button, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = "Copied!";
+                button.style.background = "#06D6A0";
+                button.style.color = "#0B132B";
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = "";
+                    button.style.color = "";
+                }, 1800);
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        // Initialize First View
+        updateSlide();
+    </script>
+</body>
+</html>
